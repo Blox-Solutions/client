@@ -4,30 +4,182 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        
         <title>Blox Analyzer</title>
-    
+        
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css" 
-            integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+        integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+        <link rel="stylesheet" href="./styles.css">
+        
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.3/dist/umd/popper.min.js"
+        integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/js/bootstrap.min.js"
+        integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+        
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+        <!-- <script src="./src/scripts/charts.js"></script> -->
+        <!-- <sritpt src="./src/scripts/getdata.js" type="text/ja"></sritpt> -->
     
-        <link rel="stylesheet" href="./src/styles/index.sass">
-  
     </head>
 
     <body>
+        <div class="body-contents">
+            <div class="nav">
+                <div class="side-pane">
+                    <div class="nav-item">
+                        <a href="#" ><span id="nav-text"> Dashboard</span> </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="#" ><span id="nav-text"> Connection</span> </a>
+                    </div>    
+                    <div class="nav-item">
+                        <a href="#" ><span id="nav-text"> Login</span> </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="#" ><span id="nav-text"> Settings</span> </a>
+                    </div>
+                </div>
+            </div>
 
-        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-         integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.3/dist/umd/popper.min.js"
-         integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/js/bootstrap.min.js"
-         integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
-        <div class="body-background">
-            <h1>Hello world</h1>
+            <div class="main-content">
+                <div class="info">
+                    <h1 style="color:#cdd6f4;">System Usage</h1>
+                    <button type="button" class="btn btn-success" id="fetch-btn" onclick="getData();refresh();">Fetch</button>
+                </div>
 
+                <div class="stats">
+                    <div class="unit" id="cpudata">
+                        <span class="unit-heading">CPU Usage</span>
+                        <div class="statchart" id="cpuchart"></div>
+                        <div id="cpuchart" style="width:98;max-width:700px"></div>            
+                        <div class="unit-stats"></div>
+                    </div>
+
+                    <div class="unit" id="memdata">
+                        <span class="unit-heading">Memory Usage</span>
+                        <div class="statchart" id="memchart"></div>
+                        <div id="memchart" style="width:98;max-width:700px"></div>
+                        <div class="unit-stats"></div>
+                    </div>
+
+                    <div class="unit" id="iodata">
+                        <span class="unit-heading">I/O Usage</span>
+                        <div class="statchart" id="iochart"></div>
+                        <div id="iochart" style="width:98;max-width:700px"></div>
+                        <div class="unit-stats"></div>
+                    </div>
+
+                    <div class="unit" id="fsdata">
+                        <span class="unit-heading">File System</span>
+                        <div class="statchart" id="fschart"></div>
+                        <div id="fschart" style="width:98;max-width:700px"></div>
+                        <div class="unit-stats"></div>
+                    </div>
+                </div>
+            </div>
         </div>
-	    
+
+
+
 
     </body>
+
+    <script>
+        const url = 'http://localhost:5005/stats';
+
+        // var dataarr = [];
+        var cpudata = [];
+        var memdata = [];
+        var iodata = [];
+        var fsdata = [];
+
+        const options = {
+            method: 'GET',
+            mode: 'cors',
+            cache: 'no-cache',
+            credentials: 'same-origin', 
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            redirect: 'follow', 
+            referrerPolicy: 'no-referrer',  
+        };
+
+        async function getData () {
+            try {
+                console.log("fetching...");
+                
+                await fetch(url,options).then(function(res) {
+                    return res.json();
+                }).then(function (obj) {
+
+                    cpudata = [];
+                    memdata = [];
+                    fsdata = [];
+                    iodata = [];
+                    // dataarr.push(obj);
+                    // datarr = JSON.stringify(obj);
+                    cpudata.push(Object.entries(obj.cpudata));
+                    memdata.push(Object.entries(obj.memdata));
+                    fsdata.push(Object.entries(obj.fsdata));
+                    iodata.push(Object.entries(obj.iodata));
+
+                }).catch(function (err) {
+                    console.error("something went wrong");
+                    console.error(error);
+                });
+
+            }
+
+            catch (e) {
+                console.log(e);
+            }
+
+        }
+        
+        function refresh () {
+            console.log(cpudata);
+            console.log(memdata);
+            console.log(iodata);
+            console.log(fsdata);
+            
+            // console.log(dataarr);
+
+            //cpu chart
+            var cpuxArray = [cpudata[0][1][0], cpudata[0][3][0], cpudata[0][4][0], cpudata[0][6][0]];
+            var cpuyArray = [cpudata[0][1][1]*10, cpudata[0][3][1]*10, cpudata[0][4][1]*10, cpudata[0][6][1]*10];
+            var cpulayout = { title: "CPU Usage" };
+            var cdata = [{ labels: cpuxArray, values: cpuyArray, hole: 0.4, type: "pie" }];
+
+            //mem chart
+            var memxArray = [memdata[0][1][0], memdata[0][2][0], memdata[0][3][0], memdata[0][4][0], memdata[0][5][0], memdata[0][6][0]];
+            var memyArray = [memdata[0][1][1], memdata[0][2][1], memdata[0][3][1], memdata[0][4][1], memdata[0][5][1], memdata[0][6][1]];
+            var memlayout = { title: "Memory Usage" };
+            var mdata = [{ labels: memxArray, values: memyArray, hole: 0.4, type: "pie" }];
+            
+            // io chart
+            var ioxArray = [iodata[0][0][0], iodata[0][1][0], iodata[0][2][0], iodata[0][3][0], iodata[0][4][0], iodata[0][5][0], iodata[0][6][0]];
+            var ioyArray = [iodata[0][0][1], iodata[0][1][1], iodata[0][2][1], iodata[0][3][1], iodata[0][4][1], iodata[0][5][1], iodata[0][6][1]];
+            var iolayout = { title: "I/O Usage" };
+            var idata = [{ x: ioxArray, y: ioyArray, type: "bar" }];
+            
+            // fs chart
+            var fsxArray = [fsdata[0][0][0], fsdata[0][1][0], fsdata[0][2][0], fsdata[0][3][0]];
+            var fsyArray = [fsdata[0][0][1], fsdata[0][1][1], fsdata[0][2][1], fsdata[0][3][1]];
+            var fslayout = { title: "File System Usage" };
+            var fdata = [{ labels: fsxArray, values: fsyArray, hole: 0.4, type: "pie" }];
+
+
+            Plotly.newPlot("cpuchart", cdata, cpulayout);
+            Plotly.newPlot("memchart", mdata, memlayout);
+            Plotly.newPlot("iochart", idata, iolayout);
+            Plotly.newPlot("fschart", fdata, fslayout);
+        };
+
+    </script>
 
 
 </html>
