@@ -25,7 +25,7 @@
     
     </head>
 
-    <body onload="getData()">
+    <body>
         <div class="body-contents">
             <div class="nav">
                 <div class="side-pane">
@@ -47,6 +47,7 @@
             <div class="main-content">
                 <div class="info">
                     <h1 style="color:#cdd6f4;">System Usage</h1>
+                    <button type="button" class="btn btn-success" id="fetch-btn" onclick="getData();refresh();">Fetch</button>
                 </div>
 
                 <div class="stats">
@@ -115,6 +116,10 @@
                     return res.json();
                 }).then(function (obj) {
 
+                    cpudata = [];
+                    memdata = [];
+                    fsdata = [];
+                    iodata = [];
                     // dataarr.push(obj);
                     // datarr = JSON.stringify(obj);
                     cpudata.push(Object.entries(obj.cpudata));
@@ -135,43 +140,45 @@
 
         }
         
-        console.log(cpudata);
-        console.log(memdata);
-        console.log(fsdata);
-        console.log(iodata);
-        
-        // console.log(dataarr);
+        function refresh () {
+            console.log(cpudata);
+            console.log(memdata);
+            console.log(iodata);
+            console.log(fsdata);
+            
+            // console.log(dataarr);
 
-        //cpu chart
-        var xArray = [];
-        var yArray = [];
-        var layout = { title: "CPU Usage" };
-        var data = [{ labels: xArray, values: yArray, hole: 0.4, type: "pie" }];
+            //cpu chart
+            var cpuxArray = [cpudata[0][1][0], cpudata[0][3][0], cpudata[0][4][0], cpudata[0][6][0]];
+            var cpuyArray = [cpudata[0][1][1]*10, cpudata[0][3][1]*10, cpudata[0][4][1]*10, cpudata[0][6][1]*10];
+            var cpulayout = { title: "CPU Usage" };
+            var cdata = [{ labels: cpuxArray, values: cpuyArray, hole: 0.4, type: "pie" }];
 
-        //mem chart
-        // var xArray = ["Italy", "France", "Spain", "USA", "Argentina"];
-        // var yArray = [55, 49, 44, 24, 15];
-        // var layout = { title: "CPU Usage" };
-        // var data = [{ labels: xArray, values: yArray, hole: 0.4, type: "pie" }];
-        
-        // //io chart
-        // var xArray = ["Italy", "France", "Spain", "USA", "Argentina"];
-        // var yArray = [55, 49, 44, 24, 15];
-        // var layout = { title: "CPU Usage" };
-        // var data = [{ labels: xArray, values: yArray, hole: 0.4, type: "pie" }];
-        
-        // //fs chart
-        // var xArray = ["Italy", "France", "Spain", "USA", "Argentina"];
-        // var yArray = [55, 49, 44, 24, 15];
-        // var layout = { title: "CPU Usage" };
-        // var data = [{ labels: xArray, values: yArray, hole: 0.4, type: "pie" }];
+            //mem chart
+            var memxArray = [memdata[0][1][0], memdata[0][2][0], memdata[0][3][0], memdata[0][4][0], memdata[0][5][0], memdata[0][6][0]];
+            var memyArray = [memdata[0][1][1], memdata[0][2][1], memdata[0][3][1], memdata[0][4][1], memdata[0][5][1], memdata[0][6][1]];
+            var memlayout = { title: "Memory Usage" };
+            var mdata = [{ labels: memxArray, values: memyArray, hole: 0.4, type: "pie" }];
+            
+            // io chart
+            var ioxArray = [iodata[0][0][0], iodata[0][1][0], iodata[0][2][0], iodata[0][3][0], iodata[0][4][0], iodata[0][5][0], iodata[0][6][0]];
+            var ioyArray = [iodata[0][0][1], iodata[0][1][1], iodata[0][2][1], iodata[0][3][1], iodata[0][4][1], iodata[0][5][1], iodata[0][6][1]];
+            var iolayout = { title: "I/O Usage" };
+            var idata = [{ x: ioxArray, y: ioyArray, type: "bar" }];
+            
+            // fs chart
+            var fsxArray = [fsdata[0][0][0], fsdata[0][1][0], fsdata[0][2][0], fsdata[0][3][0]];
+            var fsyArray = [fsdata[0][0][1], fsdata[0][1][1], fsdata[0][2][1], fsdata[0][3][1]];
+            var fslayout = { title: "File System Usage" };
+            var fdata = [{ labels: fsxArray, values: fsyArray, hole: 0.4, type: "pie" }];
 
 
-        Plotly.newPlot("cpuchart", data, layout);
-        Plotly.newPlot("memchart", data, layout);
-        Plotly.newPlot("iochart", data, layout);
-        Plotly.newPlot("fschart", data, layout);
-        
+            Plotly.newPlot("cpuchart", cdata, cpulayout);
+            Plotly.newPlot("memchart", mdata, memlayout);
+            Plotly.newPlot("iochart", idata, iolayout);
+            Plotly.newPlot("fschart", fdata, fslayout);
+        };
+
     </script>
 
 
